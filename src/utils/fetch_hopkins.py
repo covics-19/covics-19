@@ -3,6 +3,7 @@ import urllib.parse
 import json
 from bson import ObjectId
 import pandas as pd
+import numpy as np
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -35,15 +36,11 @@ def load_model_data():
     '''
     entries_list = _fetch_hopkins_from_db()
     df = pd.DataFrame(entries_list)         # DataFrame of all Hopkins cases
-
-    df_confirmed = df.loc[df.Status == 'confirmed']
-    df_deaths = df.loc[df.Status == 'deaths']
-    df_recovered = df.loc[df.Status == 'recovered']
-
     # we don't groupby lat and lon ---> hopkins mismatches on lat and lon values are therefore avoided
-    return df_confirmed.reset_index().groupby(['Province', 'Country', 'Date'])['Cases'].\
-               aggregate('first').unstack().reset_index(), \
-           df_deaths.reset_index().groupby(['Province', 'Country', 'Date'])['Cases'].\
-               aggregate('first').unstack().reset_index(), \
-           df_recovered.reset_index().groupby(['Province', 'Country', 'Date'])['Cases'].\
-               aggregate('first').unstack().reset_index()
+    return df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Confirmed'].\
+               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
+           df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Deaths'].\
+               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
+           df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Recovered'].\
+               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}})
+

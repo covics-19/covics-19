@@ -54,3 +54,4 @@ def main(argv):
 
 if __name__ == "__main__":
     app.run(main)
+    # TODO: split in function to extract all data once and a fanction to extract only data of last day
