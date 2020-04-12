@@ -1,6 +1,7 @@
 
 """
 TODO:
+- make an abstract class DistributionSolver and derive from it
 - use networkx
 - optimize computations using numpy
 - todo: comput all local supply might be called too many times, should i write my own optimizer?
@@ -25,6 +26,25 @@ def check_shape(array_to_check, target_shape):
 
 
 class DistributionSolver :
+  """
+  Create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
+
+  The constructor has the following all-keyword arguments:
+    * ``nb_countries``(``int``): number of countries/regional entities involved in the exchange
+    * ``nb_time_steps``(``int``): number of time steps(days) for which the predictions of number of cases are available.
+    * `` edge_transit_durations``(``array`` of ``float``): for each pair of countries, the estimated transit time of supply from the first to the second country(this is not assumed symmetric). The shape should be in the form ``(nb_countries, nb_countries)``, first index being the source country and second index the destination. The diagonal of the matrix is ignored.
+    * ``exchange_cost``(``float``): constant cost penality to incur on each exchange.
+    * ``supply_initial``(``array`` of ``float``): initial supply for each location. Shape is ``(nb_coutnries,)``.
+    * ``supply_buffer``(``array`` of ``float``): amount of supply to keep at each location to serve as a safety buffer. Shape is ``(nb_countries,)``. If ``None`` will be initialized to zero.
+    * ``nb_predicted_cases``(``array`` of ``float``): predicted number of cases for each location and each time step. Shape is ``(nb_countries, nb_time_steps)``.
+    * ``tol``(``float``): optional tolenrance for floating point tests(default ``1.e-5``).
+    
+  The solver has the following all-keyword arguments:
+    * ``policy_initial_guess``(``array`` of ``float``): an optional policy to serve as an initialization for the solver. Shape is ``(nb_countries, nb_countries, nb_time_steps)``. If ``None``, a zero vector will be used.
+    * ``optimization_algorithm``(``string``): an optional method name to use. The name should be the same as used by Scipy. The default is ``'trust-constr'``.
+    
+  ``solve`` returns a optimal policy in the form of an array of shape ``(nb_countries, nb_countries, nb_time_steps)``. The first index represent the giving country and the second the country which is the destination of the exchange, and this is for each time step.
+  """
 
   def __init__(self,
                 nb_countries = None,
@@ -34,7 +54,6 @@ class DistributionSolver :
                 tol = 1.e-5,
                 supply_initial = None,
                 supply_buffer = None,
-                policy_initial_guess = None,
                 nb_predicted_cases = None):
     self.nb_countries = nb_countries
     self.nb_time_steps = nb_time_steps
@@ -49,9 +68,6 @@ class DistributionSolver :
     else :
       self.supply_buffer = np.array(supply_buffer)
     check_shape(self.supply_buffer,(self.nb_countries, ))
-    self.policy_initial_guess = policy_initial_guess
-    if(self.policy_initial_guess is not None):
-      check_shape(self.policy_initial_guess, self.policy_shape)
     self.nb_cases = np.array(nb_predicted_cases)
     check_shape(self.nb_cases,(self.nb_countries, self.nb_time_steps))
     self.edge_transit_durations = np.array(edge_transit_durations)
@@ -149,14 +165,11 @@ class DistributionSolver :
     policy = np.reshape(policy_flat, self.policy_shape)
     return self.compute_constraints(policy).flatten()
 
-  # 'Nelder-Mead'
   def solve(self, policy_initial_guess = None, optimization_algorithm = 'trust-constr'):
-    if(policy_initial_guess is not None):
-      self.policy_initial_guess = policy_initial_guess
-    elif(self.policy_initial_guess is None):
-      self.policy_initial_guess = np.zeros(self.policy_shape, dtype = float)
+    if(policy_initial_guess is None):
+      policy_initial_guess = np.zeros(self.policy_shape, dtype = float)
     solution = optimize.minimize(self.compute_objective_function_flat_input,
-                                    self.policy_initial_guess.flatten(),
+                                    policy_initial_guess.flatten(),
                                     method = optimization_algorithm,
                                     constraints = optimize.NonlinearConstraint(self.compute_constraints_flat_input, 0., np.inf),
                                     options = { 'verbose' : 1 })

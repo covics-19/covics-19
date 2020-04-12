@@ -13,7 +13,6 @@ def create_a_base_solver(nb_countries = 4,
       edge_transit_durations = np.ones((nb_countries, nb_countries), dtype = int)
     supply_initial = 10. * np.ones((nb_countries,), dtype = float)
     supply_buffer = np.ones((nb_countries,), dtype = float)
-    policy_initial_guess = np.zeros((nb_countries, nb_countries, nb_time_steps), dtype = float)
     nb_predicted_cases = 5. * np.ones((nb_countries, nb_time_steps), dtype = float)
     solver = DistributionSolver(nb_countries = nb_countries,
                                  nb_time_steps = nb_time_steps,
@@ -21,7 +20,6 @@ def create_a_base_solver(nb_countries = 4,
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     return solver
 
@@ -33,7 +31,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = float)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     # i dont understand how assertRaises work
     try :
@@ -43,7 +40,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     except(BaseException):
       success = True
@@ -96,7 +92,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     solver = DistributionSolver(nb_countries = 4,
                                  nb_time_steps = 3,
@@ -104,7 +99,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
     policy[ 2, 1, 1 ] = 1.
@@ -161,7 +155,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     solver = DistributionSolver(nb_countries = 4,
                                  nb_time_steps = 3,
@@ -169,7 +162,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
     policy[2,1,1] = 1.
@@ -191,7 +183,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
     solver = DistributionSolver(nb_countries = 4,
@@ -200,7 +191,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
     policy[ 3, 0, 1 ] = 1.
@@ -222,7 +212,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
     solver = DistributionSolver(nb_countries = 4,
@@ -231,7 +220,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
     policy[ 0, 1, 0 ] = 7.
@@ -254,7 +242,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
     solver = DistributionSolver(nb_countries = 4,
@@ -263,7 +250,6 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
     policy[ 3, 0, 1 ] = 1.
@@ -277,7 +263,6 @@ class TestDistributionSolver(unittest.TestCase):
     edge_transit_durations = np.ones((4,4), dtype = int)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
-    policy_initial_guess = np.zeros((4, 4, 3), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
     solver = DistributionSolver(nb_countries = 4,
@@ -286,23 +271,8 @@ class TestDistributionSolver(unittest.TestCase):
                                  exchange_cost = 1.22,
                                  supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 policy_initial_guess = policy_initial_guess,
                                  nb_predicted_cases = nb_predicted_cases)
     policy = np.zeros((4,4,3))
-    """
-    self.assertAlmostEqual(solver.local_supply_by_country[ 0, 0 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 1, 0 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 2, 0 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 3, 0 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 0, 1 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 1, 1 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 2, 1 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 3, 1 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 0, 2 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 1, 2 ], 5.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 2, 2 ], 2.)
-    self.assertAlmostEqual(solver.local_supply_by_country[ 3, 2 ], 5.)
-    """
     constraints =[ [ 4., 4., 4., 4. ],[ 4., 4., 4., 4. ],[ 4., 4., 1., 4. ] ]
     self.assertTrue(np.allclose(solver.compute_constraints(policy), np.array(constraints)))
     policy[ 0, 1, 0 ] = 7.
