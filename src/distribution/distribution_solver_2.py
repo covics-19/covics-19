@@ -1,17 +1,5 @@
 
-"""
-TODO:
-- make an abstract class DistributionSolver and derive from it
-- use networkx
-- optimize computations using numpy
-- todo: comput all local supply might be called too many times, should i write my own optimizer?
-- optimizer
-- compute the gradient(!)
 
-DONE:
-- make a class, global variables(such as edge time length) becomes members
-- make tests
-"""
 
 
 import collections
@@ -19,10 +7,7 @@ import numpy as np
 from scipy import optimize
 
 
-def check_shape(array_to_check, target_shape):
-  if(array_to_check.shape != target_shape):
-    raise Exception("init DistributionSolver params")
-
+from distribution_solver_abstract import *
 
 
 class DistributionSolver :
@@ -37,7 +22,7 @@ class DistributionSolver :
     * ``supply_initial``(``array`` of ``float``): initial supply for each location. Shape is ``(nb_coutnries,)``.
     * ``supply_buffer``(``array`` of ``float``): amount of supply to keep at each location to serve as a safety buffer. Shape is ``(nb_countries,)``. If ``None`` will be initialized to zero.
     * ``nb_predicted_cases``(``array`` of ``float``): predicted number of cases for each location and each time step. Shape is ``(nb_countries, nb_time_steps)``.
-    * ``tol``(``float``): optional tolenrance for floating point tests(default ``1.e-5``).
+    * ``tol``(``float``): optional tolerance for floating point tests(default ``1.e-5``).
     
   The solver has the following all-keyword arguments:
     * ``policy_initial_guess``(``array`` of ``float``): an optional policy to serve as an initialization for the solver. Shape is ``(nb_countries, nb_countries, nb_time_steps)``. If ``None``, a zero vector will be used.
