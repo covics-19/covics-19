@@ -1,46 +1,50 @@
 
 
-from distribution_solver_2 import *
+from distribution_solver_complicated import *
 
 import unittest
 
 import numpy as np
+
+def compute_supply_predictions(initial, cases, nb_t):
+  predictions = - cases + np.repeat(initial, nb_t).reshape(cases.shape)
+  return predictions
 
 def create_a_base_solver(nb_countries = 4,
                           nb_time_steps = 3,
                           edge_transit_durations = None):
     if(edge_transit_durations is None):
       edge_transit_durations = np.ones((nb_countries, nb_countries), dtype = int)
-    supply_initial = 10. * np.ones((nb_countries,), dtype = float)
     supply_buffer = np.ones((nb_countries,), dtype = float)
+    supply_initial = 10. * np.ones((nb_countries,), dtype = float)
     nb_predicted_cases = 5. * np.ones((nb_countries, nb_time_steps), dtype = float)
-    solver = DistributionSolver(nb_countries = nb_countries,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, nb_time_steps)
+    solver = DistributionSolverComplicated(nb_countries = nb_countries,
                                  nb_time_steps = nb_time_steps,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
-                                 supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions,
+                                 supply_buffer = supply_buffer)
     return solver
 
 
 
-class TestDistributionSolver(unittest.TestCase):
+class TestDistributionSolverComplicated(unittest.TestCase):
 
   def test_type_check_transit_durations(self):
     edge_transit_durations = np.ones((4,4), dtype = float)
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
     # i dont understand how assertRaises work
     try :
-      DistributionSolver(nb_countries = 4,
+      DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     except(BaseException):
       success = True
     else :
@@ -93,13 +97,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     policy[ 2, 1, 1 ] = 1.
     self.assertAlmostEqual(solver.compute_local_supply_on_edge(policy, 0,(2, 1)), 0.)
@@ -156,13 +160,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_initial = 10. * np.ones((4,), dtype = float)
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     policy[2,1,1] = 1.
     self.assertAlmostEqual(solver.compute_local_supply_in_country(policy, 0, 0), 5.)
@@ -185,13 +189,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     policy[ 3, 0, 1 ] = 1.
     solver.compute_all_local_supplies_for_all_times(policy)
@@ -214,13 +218,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     policy[ 0, 1, 0 ] = 7.
     solver.compute_all_local_supplies_for_all_times(policy)
@@ -244,13 +248,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     policy[ 3, 0, 1 ] = 1.
     self.assertAlmostEqual(solver.compute_objective_function(policy), 1.22)
@@ -265,13 +269,13 @@ class TestDistributionSolver(unittest.TestCase):
     supply_buffer = np.ones((4,), dtype = float)
     nb_predicted_cases = 5. * np.ones((4, 3), dtype = float)
     nb_predicted_cases[ 2, 2 ] = 8.
-    solver = DistributionSolver(nb_countries = 4,
+    supply_predictions = compute_supply_predictions(supply_initial, nb_predicted_cases, 3)
+    solver = DistributionSolverComplicated(nb_countries = 4,
                                  nb_time_steps = 3,
                                  edge_transit_durations = edge_transit_durations,
                                  exchange_cost = 1.22,
-                                 supply_initial = supply_initial,
                                  supply_buffer = supply_buffer,
-                                 nb_predicted_cases = nb_predicted_cases)
+                                 supply_predictions = supply_predictions)
     policy = np.zeros((4,4,3))
     constraints =[ [ 4., 4., 4., 4. ],[ 4., 4., 4., 4. ],[ 4., 4., 1., 4. ] ]
     self.assertTrue(np.allclose(solver.compute_constraints(policy), np.array(constraints)))

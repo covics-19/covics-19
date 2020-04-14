@@ -12,6 +12,8 @@ Linear solver:
 
 
 Complicated solver: ALL LP
+- check the return of solve is a solution, and what else to return (as for the linear)?
+- there seems to be many useless functions
 - optimize computations using numpy
 - todo: compute all local supply might be called too many times, should i write my own optimizer?
 - compute the gradient (!)
@@ -21,6 +23,8 @@ WONT DO:
 - policies where a location exchanges with itself should be removed from the problem OR NOT (this kind of exchange is penalise anyway)
 
 DONE:
+- add future discount to complicated model
+- uniformize linear solver & complicated model
 - make tests
 - lin solver documentation
 - linsolver implement sparse

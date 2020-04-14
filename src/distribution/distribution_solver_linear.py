@@ -69,15 +69,7 @@ class DistributionSolverLinear :
     if(not issubclass(self.edge_transit_durations.dtype.type, np.integer)):
       raise Exception("DistributionSolver init, wrong type")
     check_shape(self.edge_transit_durations,(self.nb_countries, self.nb_countries))
-    if(future_discount_coefficients is not None):
-      if(future_discount_factor is not None):
-        raise Exception("Set either a discount factor or a list of discount coefficients but not both.")
-      self.future_discount_coefficients = future_discount_coefficients
-    else :
-      try :
-        self.future_discount_coefficients = np.geomspace(1., future_discount_factor **(nb_time_steps - 1), nb_time_steps)
-      except(TypeError):
-        raise Exception("Set at least a discount factor or a list of discount coefficients.")
+    self.future_discount_coefficients = prepare_future_discount_coefficients(self.nb_time_steps, future_discount_factor, future_discount_coefficients)
     check_shape(self.future_discount_coefficients,(self.nb_time_steps, ))
     self.do_use_sparse = do_use_sparse
     self.is_A_ub_computed = False

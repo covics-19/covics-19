@@ -10,7 +10,7 @@ from scipy import optimize
 from distribution_solver_abstract import *
 
 
-class DistributionSolver :
+class DistributionSolverComplicated :
   """
   Create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
 
@@ -19,16 +19,17 @@ class DistributionSolver :
     * ``nb_time_steps``(``int``): number of time steps(days) for which the predictions of number of cases are available.
     * `` edge_transit_durations``(``array`` of ``float``): for each pair of countries, the estimated transit time of supply from the first to the second country(this is not assumed symmetric). The shape should be in the form ``(nb_countries, nb_countries)``, first index being the source country and second index the destination. The diagonal of the matrix is ignored.
     * ``exchange_cost``(``float``): constant cost penality to incur on each exchange.
-    * ``supply_initial``(``array`` of ``float``): initial supply for each location. Shape is ``(nb_coutnries,)``.
     * ``supply_buffer``(``array`` of ``float``): amount of supply to keep at each location to serve as a safety buffer. Shape is ``(nb_countries,)``. If ``None`` will be initialized to zero.
-    * ``nb_predicted_cases``(``array`` of ``float``): predicted number of cases for each location and each time step. Shape is ``(nb_countries, nb_time_steps)``.
+    * ``supply_predictions``(``array`` of ``float``): predicted available supply for each location and each time step. Shape is ``(nb_countries, nb_time_steps)``.
+    * ``future_discount_factor``(``float``): multiplicator applied at each time step. If less than 1, future predictions will have less weight in the optimization process. Incompatible with ``future_discount_coefficients``.
+    * ``future_discount_coefficients``(``array`` of ``float``): discount coefficients for each time step. Expected shape is ``(nb_time_steps,)``. Incompatible with ``future_discount_factor``.
     * ``tol``(``float``): optional tolerance for floating point tests(default ``1.e-5``).
     
   The solver has the following all-keyword arguments:
     * ``policy_initial_guess``(``array`` of ``float``): an optional policy to serve as an initialization for the solver. Shape is ``(nb_countries, nb_countries, nb_time_steps)``. If ``None``, a zero vector will be used.
     * ``optimization_algorithm``(``string``): an optional method name to use. The name should be the same as used by Scipy. The default is ``'trust-constr'``.
     
-  ``solve`` returns a optimal policy in the form of an array of shape ``(nb_countries, nb_countries, nb_time_steps)``. The first index represent the giving country and the second the country which is the destination of the exchange, and this is for each time step.
+  ``solve`` returns a optimal policy and the ``scipy.optimize.OptimzeResult`` object returned by ``scipy.optimize.linprog``. The optimal policy comes in the form of an array of shape ``(nb_countries, nb_countries, nb_time_steps)``. The first index of the policy represent the giving country and the second the country which is the destination of the exchange, and this is for each time step.
   """
 
   def __init__(self,
@@ -37,7 +38,9 @@ class DistributionSolver :
                 edge_transit_durations = None,
                 exchange_cost = None,
                 tol = 1.e-5,
-                supply_initial = None,
+                supply_predictions = None,
+                future_discount_factor = None,
+                future_discount_coefficients = None,
                 supply_buffer = None,
                 nb_predicted_cases = None):
     self.nb_countries = nb_countries
@@ -46,21 +49,20 @@ class DistributionSolver :
     self.supply_by_country_shape =(self.nb_countries, self.nb_time_steps)
     self.exchange_cost = exchange_cost
     self.basically_zero = tol
-    self.supply_initial = np.array(supply_initial)
-    check_shape(self.supply_initial,(self.nb_countries, ))
     if(supply_buffer is None):
       self.supply_buffer = np.zeros((nb_countries, ), dtype = float)
     else :
       self.supply_buffer = np.array(supply_buffer)
     check_shape(self.supply_buffer,(self.nb_countries, ))
-    self.nb_cases = np.array(nb_predicted_cases)
-    check_shape(self.nb_cases,(self.nb_countries, self.nb_time_steps))
+    self.supply_predictions = np.array(supply_predictions)
+    check_shape(self.supply_predictions,(self.nb_countries, self.nb_time_steps))
     self.edge_transit_durations = np.array(edge_transit_durations)
     if(not issubclass(self.edge_transit_durations.dtype.type, np.integer)):
       raise Exception("DistributionSolver init, wrong type")
     check_shape(self.edge_transit_durations,(self.nb_countries, self.nb_countries))
     self.local_supply_by_country = np.zeros(self.supply_by_country_shape, dtype = float)    
-
+    self.future_discount_coefficients = prepare_future_discount_coefficients(self.nb_time_steps, future_discount_factor, future_discount_coefficients)
+    check_shape(self.future_discount_coefficients,(self.nb_time_steps, ))
 
   """
   graph/network implemetation dependent part
@@ -93,7 +95,7 @@ class DistributionSolver :
 
 
   def compute_local_supply_in_country(self, policy, time, country_index):
-    supply = self.supply_initial[country_index] - self.nb_cases[ country_index, time ]
+    supply = self.supply_predictions[ country_index, time ]
     supply += - np.sum(policy[ country_index, :, 0 : time + 1 ])
     selectors = np.array(self._compute_selector_for_policy_receiver(time, country_index))
     supply += np.sum(policy[ selectors ])
@@ -116,12 +118,18 @@ class DistributionSolver :
 
   def compute_objective_function(self, policy):
     self.compute_all_local_supplies_for_all_times(policy)
-    objective_function_value = - sum( sum([ self.local_supply_by_country[ country, time ]
-                                            for country in range(self.nb_countries) if self.local_supply_by_country[ country, time ] < 0. ])
-                                       for time in range(self.nb_time_steps) )
-    objective_function_value += sum(  sum( sum( self.exchange_cost for j in range(self.nb_countries) if abs(policy[ i, j, time ]) > self.basically_zero )
-                                           for i in range(self.nb_countries) )
-                                    for time in range(self.nb_time_steps))
+    objective_function_value = - sum(
+                                      self.future_discount_coefficients[time]
+                                       *  sum([ self.local_supply_by_country[ country, time ]
+                                               for country in range(self.nb_countries) if self.local_supply_by_country[ country, time ] < 0. ])
+                                          for time in range(self.nb_time_steps) )
+    objective_function_value += sum(
+                                      self.future_discount_coefficients[time]
+                                       *  sum(
+                                               sum( self.exchange_cost
+                                                     for j in range(self.nb_countries) if abs(policy[ i, j, time ]) > self.basically_zero )
+                                               for i in range(self.nb_countries) )
+                                     for time in range(self.nb_time_steps))
     return objective_function_value
 
   def compute_constraints_on_edge(self, policy, time, location_index):
@@ -139,7 +147,9 @@ class DistributionSolver :
 
   def compute_constraints(self, policy):
     self.compute_all_local_supplies_for_all_times(policy)
-    constraints = np.array([[ self.compute_local_constraints(policy, time, country) for country in range(self.nb_countries) ] for time in range(self.nb_time_steps) ])
+    constraints = np.array([[ self.future_discount_coefficients[time] * self.compute_local_constraints(policy, time, country)
+                                     for country in range(self.nb_countries) ]
+                                   for time in range(self.nb_time_steps) ])
     return constraints
 
   def compute_objective_function_flat_input(self, policy_flat):
@@ -153,12 +163,13 @@ class DistributionSolver :
   def solve(self, policy_initial_guess = None, optimization_algorithm = 'trust-constr'):
     if(policy_initial_guess is None):
       policy_initial_guess = np.zeros(self.policy_shape, dtype = float)
-    solution = optimize.minimize(self.compute_objective_function_flat_input,
+    results = optimize.minimize(self.compute_objective_function_flat_input,
                                     policy_initial_guess.flatten(),
                                     method = optimization_algorithm,
                                     constraints = optimize.NonlinearConstraint(self.compute_constraints_flat_input, 0., np.inf),
                                     options = { 'verbose' : 1 })
-    return solution
+    solution = results.x.reshape(self.policy_shape)
+    return solution, results
 
 
 
