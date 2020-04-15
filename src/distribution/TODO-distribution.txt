@@ -1,0 +1,32 @@
+
+All the solvers:
+- LP make an abstract class DistributionSolver and derive from it
+- compare the three solvers (original, complicated, linear)
+- LP use networkx
+- rename the solvers
+
+Linear solver:
+- compare interior-point with 'revised simplex'
+- try autoscale True (vs False)
+- compare sparse vs non sparse (27 countries, 21 days gives a ~15000x15000 matrix whose coefficients are ~90+% zeros, CHECK THATS TRUE)
+
+
+Complicated solver: ALL LP
+- check the return of solve is a solution, and what else to return (as for the linear)?
+- there seems to be many useless functions
+- optimize computations using numpy
+- todo: compute all local supply might be called too many times, should i write my own optimizer?
+- compute the gradient (!)
+- change to supply_predictions (remove nb_cases)
+
+WONT DO:
+- policies where a location exchanges with itself should be removed from the problem OR NOT (this kind of exchange is penalise anyway)
+
+DONE:
+- add future discount to complicated model
+- uniformize linear solver & complicated model
+- make tests
+- lin solver documentation
+- linsolver implement sparse
+- make a class, global variables (such as edge time length) becomes members
+- make tests
