@@ -115,7 +115,7 @@ def find_optimal_transactions(costs_df_location, requirements_df_location):
     a naively optimised list of transactions. 
     '''
     transactions = []
-    
+
     costs = pd.read_csv(costs_df_location, keep_default_na=False)
     recognised_countries = costs['base_country'].unique()
     requirements = pd.read_csv(requirements_df_location)
@@ -124,6 +124,13 @@ def find_optimal_transactions(costs_df_location, requirements_df_location):
     for index, row in requirements.iterrows():
         requirements_dictionary[row['country']] = row['demand']  
 
+    # Add a buffer, so that countries don't run out of resources completely
+    for country, capacity in requirements_dictionary.items():
+        if (capacity <= 150) and (capacity >= 0):
+            requirements_dictionary[country] = 0
+        elif capacity > 150:
+            requirements_dictionary[country] = capacity - 150
+    
     # Create the main graph
     nodes = costs['base_country'].unique()
     weighted_edges = []
@@ -138,7 +145,7 @@ def find_optimal_transactions(costs_df_location, requirements_df_location):
     while ((any(capacity > 0 for capacity in requirements_dictionary.values())) and
            (any(capacity < 0 for capacity in requirements_dictionary.values()))):
         selected_transaction = find_next_transaction(requirements_dictionary, G, recognised_countries)
-        if selected_transaction == False:
+        if selected_transaction == False: # if only unrecognised countries are left
             break
         selected_transaction['transfer_amount'] = min(abs(selected_transaction['required_value']), selected_transaction['incoming_value'])
         
