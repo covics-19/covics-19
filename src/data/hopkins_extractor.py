@@ -1,16 +1,12 @@
 '''
-This script fetches data from Hopkins DB at https://covid19api.com/#details and populate our MongoDB at
-https://account.mongodb.com/account/login
+This script fetches all data from Hopkins DB at https://covid19api.com/#details and populate our MongoDB at
+https://account.mongodb.com/account/login. Data fetched are form 2020-01-22T00:00:00Z to today.
 '''
 from absl import app
 from absl import flags
-import http.client
-import mimetypes
+import requests
 from pymongo import MongoClient
-from pprint import pprint
 import urllib.parse
-import json
-
 
 # ------------------ Parameters ------------------- #
 FLAGS = flags.FLAGS
@@ -23,15 +19,13 @@ def main(argv):
     password = urllib.parse.quote_plus(FLAGS.password)
 
     #----------------- Fetching data using REST call -----------------#
-    conn = http.client.HTTPSConnection("api.covid19api.com")
-    payload = ''
+    url = "https://api.covid19api.com/all"
+    payload = {}
     headers = {}
-    conn.request("GET", "/all", payload, headers)
     print('Getting data from Hopkins DB...')
-    res = conn.getresponse()
-    data = res.read()
+    response = requests.request("GET", url, headers=headers, data=payload)
     print('Data was retrieved.')
-    json_data = json.loads(data.decode("utf-8"))
+    json_data = response.json()
 
     # ----------------- Saving data in MongoDB -----------------#
     print('Connecting to MongoAtlas...')
@@ -43,15 +37,5 @@ def main(argv):
     hopkins.insert_many(json_data)
     print('Hopkins data were loaded in MongoDB.')
 
-
-    '''
-    # TODO: temporary json file
-    # Saving as JSON
-    import json
-    json_data = json.loads(data.decode("utf-8"))
-    with open('hopkins.json', 'w') as outfile:
-        json.dump(json_data, outfile)'''
-
 if __name__ == "__main__":
     app.run(main)
-    # TODO: split in function to extract all data once and a fanction to extract only data of last day
