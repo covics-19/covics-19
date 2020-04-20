@@ -17,17 +17,17 @@ from distribution_solver_abstract import *
 
 class DistributionSolverLinear :
   """
-  Create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
+  How to use: create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
 
   The constructor has the following all-keyword arguments:
     * ``nb_countries``(``int``): number of countries/regional entities involved in the exchange
     * ``nb_time_steps``(``int``): number of time steps(days) for which the predictions of number of cases are available.
     * `` edge_transit_durations``(``array`` of ``float``): for each pair of countries, the estimated transit time of supply from the first to the second country(this is not assumed symmetric). The shape should be in the form ``(nb_countries, nb_countries)``, first index being the source country and second index the destination. The diagonal of the matrix is ignored.
-    * ``exchange_cost_factor``(``float``): constant factor for the linear cost penality incurred on each exchange.
+    * ``exchange_cost_factor``(``float``): constant factor for the linear cost penality incurred on each exchange. Default is ``0.``.
     * ``supply_predictions``(``array`` of ``float``): predicted available supply for each location at each time step. Shape is ``(nb_coutnries, nb_time_steps)``.
     * ``supply_buffer``(``array`` of ``float``): amount of supply to keep at each location to serve as a safety buffer. Shape is ``(nb_countries,)``. If ``None`` will be initialized to zero.
-    * ``future_discount_factor``(``float``): multiplicator applied at each time step. If less than 1, future predictions will have less weight in the optimization process. Incompatible with ``future_discount_coefficients``.
     * ``future_discount_coefficients``(``array`` of ``float``): discount coefficients for each time step. Expected shape is ``(nb_time_steps,)``. Incompatible with ``future_discount_factor``.
+    * ``future_discount_factor``(``float``): multiplicator applied at each time step. If less than 1, future predictions will have less weight in the optimization process. Incompatible with ``future_discount_coefficients``. By default, no discount will be applied(i.e. ``future_discount_factor == 1.``).
     * ``tol``(``float``): optional tolerance for floating point tests(default ``1.e-5``).
     * ``do_use_sparse``(``bool``):(optional) if True, the solver will use a sparse matrix(default is ``False``).
     
