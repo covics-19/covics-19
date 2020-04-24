@@ -13,7 +13,7 @@ if __name__ == "__main__":
     populate_results.populate_with_predicted_cases(results)
 
     # Get transactions
-    transactions = get_distributions.find_optimal_transactions(costs_df_location='distribution/country_distances.csv', 
+    transactions = get_distributions.find_optimal_transactions(costs_df_location='../data/external/country_distances.csv', 
                                                                requirements_df_location='distribution/demands.csv')
     now = datetime.now()
     distributions = {"timestamp": now, "distributions": transactions}
