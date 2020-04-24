@@ -209,7 +209,9 @@ def plotCasesandPredict(country_wide_df, country_code, days, current_date, verbo
 
 
 
+
 def main(days, resource_capacity_location, demands_output_location):
+
     # load data
     country_wide_df = fetch_hopkins.load_data_for_model_growth()
     
