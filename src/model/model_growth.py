@@ -10,7 +10,6 @@ import ast
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, '../')
-from utils import populate_results
 from utils import fetch_hopkins
 
 def logistic(t, a, b, c, d):
@@ -210,7 +209,9 @@ def plotCasesandPredict(country_wide_df, country_code, days, current_date, verbo
 
 
 
-def main(days):
+
+def main(days, resource_capacity_location, demands_output_location):
+
     # load data
     country_wide_df = fetch_hopkins.load_data_for_model_growth()
     
@@ -231,7 +232,7 @@ def main(days):
     
     # import total medical capacity
     resources_capacity_dict = {}
-    resources_capacity_df = pd.read_csv('../../data/external/country_medical_capacities.csv')
+    resources_capacity_df = pd.read_csv(resource_capacity_location)
     for index, row in resources_capacity_df.iterrows():
         resources_capacity_dict[row['country_code']] = row['total_capacity']
 
@@ -298,13 +299,6 @@ def main(days):
         country_list.append(country_code)
 
     demands_frame = pd.DataFrame({'country':country_list, 'demand':demands_list})
-    demands_frame.to_csv("../distribution/demands.csv", index=False)
+    demands_frame.to_csv(demands_output_location, index=False)
 
     return total_results
-
-
-if __name__ == "__main__":
-    days = 21 # 3 weeks prediction
-    results = main(days)
-    # print(results)
-    populate_results.populate_with_predicted_cases(results)

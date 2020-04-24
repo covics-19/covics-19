@@ -31,20 +31,20 @@ def _fetch_hopkins_from_db():
 
 
 # Dead now
-def load_model_data():
-    '''
-    This script fetches latest Hopkins data from our MongoDB to feed our prediction model
-    :return:
-    '''
-    entries_list = _fetch_hopkins_from_db()
-    df = pd.DataFrame(entries_list)         # DataFrame of all Hopkins cases
-    # we don't groupby lat and lon ---> hopkins mismatches on lat and lon values are therefore avoided
-    return df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Confirmed'].\
-               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
-           df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Deaths'].\
-               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
-           df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Recovered'].\
-               aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}})
+# def load_model_data():
+#     '''
+#     This script fetches latest Hopkins data from our MongoDB to feed our prediction model
+#     :return:
+#     '''
+#     entries_list = _fetch_hopkins_from_db()
+#     df = pd.DataFrame(entries_list)         # DataFrame of all Hopkins cases
+#     # we don't groupby lat and lon ---> hopkins mismatches on lat and lon values are therefore avoided
+#     return df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Confirmed'].\
+#                aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
+#            df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Deaths'].\
+#                aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}}), \
+#            df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'Date'])['Recovered'].\
+#                aggregate('first').unstack().reset_index().replace({'Province':{'to_be_removed': np.nan}})
 
 
 

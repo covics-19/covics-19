@@ -11,8 +11,6 @@ import pandas as pd
 import networkx as nx
 import sys
 sys.path.insert(0, '../')
-from utils import populate_results
-from datetime import datetime
 
 
 def make_graph(nodes, edges):
@@ -157,12 +155,3 @@ def find_optimal_transactions(costs_df_location, requirements_df_location):
         transactions.append(selected_transaction)
     
     return transactions
-
-
-transactions = find_optimal_transactions('country_distances.csv', 'demands.csv')
-now = datetime.now()
-distributions = {"timestamp": now, "distributions": transactions}
-result = populate_results.populate_with_distributions(distributions)
-
-# print(result)
-# print(transactions)
