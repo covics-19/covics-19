@@ -51,5 +51,6 @@ def _fetch_hopkins_from_db():
 def load_data_for_model_growth():
     entries_list = _fetch_hopkins_from_db()
     df = pd.DataFrame(entries_list)
-    countrywide_df = df.groupby(['Country','CountryCode', 'Date'])['Confirmed', 'Deaths', 'Recovered'].sum().reset_index()
+    # TODO: QUICK HACK: REMOVE THE 0.25 FACTOR WHEN THE ISSUE WITH DUPLICATES IN THE DATABASE IS SOLVED!
+    countrywide_df = 0.25 * df.groupby(['Country','CountryCode', 'Date'])['Confirmed', 'Deaths', 'Recovered'].sum().reset_index()
     return countrywide_df
