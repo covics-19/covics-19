@@ -35,7 +35,11 @@ def plot_details(country_code, current_date):
 
 def plot_scale_and_save(country_code):
     plt.yscale('linear')
-    plt.savefig('../../data/figures/'+country_code+'_linear.png')
+    try :
+      plt.savefig('../../data/figures/'+country_code+'_linear.png')
+    except (FileNotFoundError) :
+      # just ignore errors due to missing path
+      pass
     # plt.yscale('log')
     # plt.savefig('../../data/figures/'+country_code+'_log.png')
 
@@ -210,7 +214,7 @@ def plotCasesandPredict(country_wide_df, country_code, days, current_date, verbo
 
 
 
-def main(days, resource_capacity_location, demands_output_location):
+def main(days, resource_capacity_location, demands_output_location, do_show_results = False):
 
     # load data
     country_wide_df = fetch_hopkins.load_data_for_model_growth()
@@ -243,7 +247,7 @@ def main(days, resource_capacity_location, demands_output_location):
     # create full output dictionary
     for country_code in topcountries:
         # run prediction model
-        dbltime, dbltimeerr, recentdbltime, params, pred = plotCasesandPredict(country_wide_df, country_code, days, current_date)
+        dbltime, dbltimeerr, recentdbltime, params, pred = plotCasesandPredict(country_wide_df, country_code, days, current_date, verbose = do_show_results, figs = do_show_results)
         # initialise dict of results
         country_results_dict = {}
         
