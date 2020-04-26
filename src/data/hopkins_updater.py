@@ -25,9 +25,9 @@ def fetch_new_data_from_hopkins (quiet = False, dryrun = False) :
     if (not quiet) :
       print ('Warning: Hopkins data has already been updated.')
     return 
-  # i have no idea what im doing here:
   start_date = (date_last_update + datetime . timedelta (days = 1)) . isoformat ()
   end_date = (today + datetime . timedelta (days = 1)) . isoformat ()
+  # this doesnt work like that unfortunately:
   hopkins_api_query = 'all?from=' + start_date + 'T00:00:00Z&to=' + end_date + 'T00:00:00Z'
   if (not dryrun) :
     json_data = query_hopkins (hopkins_api_query)
