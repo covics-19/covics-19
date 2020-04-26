@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, '../')
 from utils import fetch_hopkins
 
+
+# due to underestimate of the growth, made it harder to fit to logistic
+logistic_r2_threshold = 0.99
+exponential_r2_threshold = 0.95
+
+
 def logistic(t, a, b, c, d):
     return c + (d - c)/(1 + a * np.exp(- b * t))
 
@@ -60,7 +66,7 @@ def exponential_graph(x, y, epopt, x_exp, y_exp, country_code, current_date):
     plot_scale_and_save(country_code)
 
 
-def get_country_confirmed_time_series(country_wide_df, country_code):
+def get_country_confirmed_time_series(country_wide_df, country_code, nb_time_steps = None):
     # filter down to region rows from the country of interest
     country_cases = country_wide_df[country_wide_df['CountryCode'] == country_code]
     # take only the columns of interest (cases by date)
@@ -68,6 +74,8 @@ def get_country_confirmed_time_series(country_wide_df, country_code):
     # drop the early dates for a country, before they had a case
     time_series_frame = time_series_frame[time_series_frame['Confirmed'] > 0]
     time_series_frame = time_series_frame.sort_values('Date')
+    if (nb_time_steps is not None) :
+      time_series_frame = time_series_frame . iloc [ : , - nb_time_steps : ]
     return time_series_frame
 
 
@@ -96,7 +104,7 @@ def try_logistic(x, y, days, verbose=False):
     ss_tot = np.sum((y - np.mean(y))**2)
     logisticr2 = 1 - (ss_res / ss_tot)
 
-    if logisticr2 > 0.95:
+    if logisticr2 > logistic_r2_threshold:
         logisticworked = True
         # make predictions
         day_now = y.size-1 # what day we are on now
@@ -131,7 +139,7 @@ def try_exponential(x, y, days, verbose=False):
     ss_tot = np.sum((y - np.mean(y))**2)
     expr2 = 1 - (ss_res / ss_tot)
 
-    if expr2 > 0.95:
+    if expr2 > exponential_r2_threshold:
         exponentialworked = True
         # make predictions
         day_now = y.size-1 # what day we are on now
