@@ -19,6 +19,7 @@ flags.DEFINE_string("password", mongodb_password, "Password of MongoDB. Default 
 flags.DEFINE_boolean("dry_run", True, "equivalent to `--no_request --no_db_write` (default is *TRUE*)")
 flags.DEFINE_boolean("no_request", False, "Do not fetch data from Hopkins (for testing purpose)")
 flags.DEFINE_boolean("no_db_write", False, "Do not modify the data base (for testing purpose)")
+flags.DEFINE_boolean("purge_collection", True, "Will delete everything in the collection (avoids duplicates)")
 
 def main(argv):
     do_no_request = FLAGS.no_request
@@ -26,6 +27,7 @@ def main(argv):
     if (FLAGS.dry_run) :
       do_no_request = True
       do_no_db_write = True
+    do_purge_collection = FLAGS.purge_collection
 
     #----------------- Fetching data using REST call -----------------#
     print('Getting data from Hopkins DB...')
@@ -39,14 +41,20 @@ def main(argv):
     # ----------------- Saving data in MongoDB -----------------#
     print('Connecting to MongoAtlas...')
     hopkins = get_mongodb_collection ('covics-19', collection_name = 'hopkins')
-    print('Conected to MongoAtlas.')
+    print('Connected to MongoAtlas.')
+    if (do_purge_collection) :
+      if (not do_no_db_write) :
+        print ('Cleaning collection')
+        hopkins . delete_many ({})
+      else :
+        print ('(dry_run/no_db_write: no data purged)')
     print('Loading Hopkins data in MongoDB...')
     if (not do_no_db_write) :
       hopkins.insert_many(json_data)
       update_checkpoint ()
     else :
       print ('(dry_run/no_db_write: no data inserted)')
-    print('Hopkins data were loaded in MongoDB.')
+    print('Hopkins data has been loaded in MongoDB.')
 
 if __name__ == "__main__":
     app.run(main)
