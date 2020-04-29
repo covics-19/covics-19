@@ -1,48 +1,66 @@
-"""
-example of query for the update:
-https://api.covid19api.com/country/south-africa/status/confirmed?from=2020-03-01T00:00:00Z&to=2020-04-01T00:00:00Z
-
-Ive added a collection 'checkpoint' to get the date of the last update
-check for document with content such as:
-last_hopkins_update:"2020-04-25"
-TODO: thats not so great in terms of synchronization (somebody competent should look into this please)
-"""
-import datetime
+'''
+This script fetches today's data from Hopkins DB at https://covid19api.com/#details and populate our MongoDB at
+https://account.mongodb.com/account/login.
+'''
+from absl import app
+from datetime import datetime
+from absl import flags
+import requests
 import sys
 
-sys.path.insert(0, "../")
-from credentials import *
+sys . path . insert (0, "../")
+import credentials
 from utils . mongodb_utils import update_checkpoint, get_checkpoint, get_mongodb_collection
 
-from query_hopkins import query_hopkins
+# ------------------ Parameters ------------------- #
+FLAGS = flags . FLAGS
+
+flags . DEFINE_string ('username', credentials . mongodb_username, 'Username of MongoDB. Default is covics-19 user')
+flags . DEFINE_string ('password', credentials . mongodb_password, 'Password of MongoDB. Default is ones\'s of covics-19 user')
+flags . DEFINE_boolean ('dryrun', False, '')
+
+def main(argv):
 
 
+    # ------------------------ Today timestamp -----------------------#
+    now = datetime.now()
+    yesterday = now.replace(day=(now.day -1), hour=23, minute=59, second=59, microsecond=0) # midnight time as hopkins convention
+    yesterday = yesterday.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-def fetch_new_data_from_hopkins (quiet = False, dryrun = False) :
-  today = datetime . datetime . utcnow () . date ()
-  date_last_update = datetime . date . fromisoformat (get_checkpoint ())
-  if (today <= date_last_update) :
-    if (not quiet) :
-      print ('Warning: Hopkins data has already been updated.')
-    return 
-  start_date = (date_last_update + datetime . timedelta (days = 1)) . isoformat ()
-  end_date = (today + datetime . timedelta (days = 1)) . isoformat ()
-  # this doesnt work like that unfortunately:
-  hopkins_api_query = 'all?from=' + start_date + 'T00:00:00Z&to=' + end_date + 'T00:00:00Z'
-  if (not dryrun) :
-    json_data = query_hopkins (hopkins_api_query)
-  else :
-    print (f'Query={hopkins_api_query} (not submitted)')
-    json_data = None
-  if (not dryrun and (json_data is None)) :
-    return
-  hopkins_collection = get_mongodb_collection ('covics-19', collection_name = 'hopkins')
-  if (not dryrun) :
-    hopkins_collection . insert_many (json_data)
-    # TODO: probably not entirely safe but im assuming that this script wont be called more than once a day so should be fine
-    update_checkpoint (date = today . isoformat ())
-  else :
-    print ('Database not updated (dryrun)')
+    # --------------------- Connecting to MongoDB --------------------#
+    print ('Connecting to MongoAtlas...')
+    hopkins = get_mongodb_collection ('covics-19',
+                                      collection_name = 'hopkins',
+                                      mongodb_username = FLAGS . username,
+                                      mongodb_password = FLAGS . password)
+    print ('Conected to MongoAtlas.')
+
+    # -------------- Fetching countries using REST call --------------#
+    url = "https://api.covid19api.com/countries"
+    payload = {}
+    headers = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    countries = response.json()
+
+    #----------------- Fetching data using REST call -----------------#
+    for country in countries:
+        print(country)
+        slug = country['Slug']
+        url = "https://api.covid19api.com/live/country/" + slug + "/status/confirmed/date/" + str(yesterday)
+        payload = {}
+        headers = {}
+        response = requests.request("GET", url, headers=headers, data=payload)
+        json_response = response.json()
+        for json_data in json_response:
+            print(json_data)
+
+            # ----------------- Saving data in MongoDB -----------------#
+            print('Loading Hopkins data in MongoDB...')
+            if (FLAGS . dryrun) :
+              print ('(dry run: nothing updated)')
+            else :
+              hopkins.insert_one(json_data)
+            print('Hopkins data were loaded in MongoDB.')
 
 if __name__ == "__main__":
-  fetch_new_data_from_hopkins ()
+    app.run(main)

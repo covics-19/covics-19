@@ -2,13 +2,16 @@
 
 import sys
 sys.path.insert(0, "../")
-from credentials import *
+import credentials
 
 import datetime
 from pymongo import MongoClient
 import urllib.parse
 
-def get_mongodb_collection (data_base_name, collection_name = None) :
+def get_mongodb_collection (data_base_name,
+                            collection_name = None,
+                            mongodb_username = credentials . mongodb_username,
+                            mongodb_password = credentials . mongodb_password) :
   username = urllib.parse.quote_plus(mongodb_username)
   password = urllib.parse.quote_plus(mongodb_password)
   client = MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0-pjnfk.mongodb.net/test?retryWrites=true&w=majority")
