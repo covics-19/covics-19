@@ -1,10 +1,11 @@
-from pymongo import MongoClient
-import urllib.parse
 import json
 from bson import ObjectId
 import pandas as pd
 import numpy as np
 
+import sys
+sys.path.insert(0, '../')
+from utils.mongodb_utils import get_mongodb_collection
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -19,16 +20,12 @@ def _fetch_hopkins_from_db():
     :return: List of dictionaries containing Hopkins data
     '''
     entries_list = []
-    username = urllib.parse.quote_plus("covics-19")
-    password = urllib.parse.quote_plus("Coron@V!rus2020")
-    client = MongoClient(
-        "mongodb+srv://" + username + ":" + password + "@cluster0-pjnfk.mongodb.net/test?retryWrites=true&w=majority")
-    db = client['covics-19']
-    hopkins = db["hopkins"].find()
+    hopkins = get_mongodb_collection ('covics-19', collection_name = 'hopkins') . find ()
     for elem in hopkins:
         entries_list.append(elem)
     # entries_json = JSONEncoder().encode(entries_list) # use this to return in str format
     return entries_list
+
 
 
 def load_model_data():

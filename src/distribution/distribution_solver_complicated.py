@@ -12,7 +12,7 @@ from distribution_solver_abstract import *
 
 class DistributionSolverComplicated :
   """
-  Create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
+  How to use: create an instance of Distribution then call the solver with ``optimal_policy = my_solver.solve()``.
 
   The constructor has the following all-keyword arguments:
     * ``nb_countries``(``int``): number of countries/regional entities involved in the exchange

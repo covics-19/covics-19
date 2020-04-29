@@ -2,9 +2,12 @@
 This script populate DB with predicted number of cases per country.
 '''
 
-from pymongo import MongoClient
-import urllib.parse
 import json
+
+import sys
+sys.path.insert(0, "../")
+from credentials import *
+from utils.mongodb_utils import get_mongodb_collection
 
 '''
 # example of input data
@@ -42,11 +45,7 @@ def populate_with_predicted_cases(predictions_dict):
     :param predictions_dict: dictionary of predictions per country
     :return: An instance of InsertOneResult.
     '''
-    username = urllib.parse.quote_plus("covics-19")
-    password = urllib.parse.quote_plus("Coron@V!rus2020")
-    client = MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0-pjnfk.mongodb.net/test?retryWrites=true&w=majority")
-    db = client['covics-19']
-    predictions_col = db["predictions"]
+    predictions_col = get_mongodb_collection ('covics-19', collection_name = 'predictions')
     result = predictions_col.insert_one(predictions_dict)
     return result
 
@@ -56,10 +55,6 @@ def populate_with_distributions(distributions_dict):
     :param predictions_dict: dictionary of predictions per country
     :return: An instance of InsertOneResult.
     '''
-    username = urllib.parse.quote_plus("covics-19")
-    password = urllib.parse.quote_plus("Coron@V!rus2020")
-    client = MongoClient("mongodb+srv://" + username + ":" + password + "@cluster0-pjnfk.mongodb.net/test?retryWrites=true&w=majority")
-    db = client['covics-19']
-    distributions_col = db["distributions"]
+    distributions_col = get_mongodb_collection ('covics-19', collection_name = 'distributions')
     result = distributions_col.insert_one(distributions_dict)
     return result
