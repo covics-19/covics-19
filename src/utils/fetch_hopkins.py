@@ -1,3 +1,9 @@
+"""
+the function load_model_data comes from dmpiergiacomo PR (#33)
+the main.py uses load_data_for_model_growth
+which one is the latest?
+"""
+
 import json
 from bson import ObjectId
 import pandas as pd
@@ -35,7 +41,6 @@ def load_model_data():
     '''
     entries_list = _fetch_hopkins_from_db()
     df = pd.DataFrame(entries_list)  # DataFrame of all Hopkins cases
-
     # we don't groupby lat and lon ---> hopkins mismatches on lat and lon values are therefore avoided
     return df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'CountryCode', 'Date']) \
                ['Confirmed'].aggregate('first').unstack().reset_index(). \
@@ -46,10 +51,8 @@ def load_model_data():
            df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'CountryCode', 'Date']) \
                ['Recovered'].aggregate('first').unstack().reset_index(). \
                replace({'Province': {'to_be_removed': ''}})
-               
-               
-               
-               
+
+
                
 def load_data_for_model_growth():
     entries_list = _fetch_hopkins_from_db()
