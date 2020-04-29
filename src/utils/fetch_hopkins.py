@@ -46,3 +46,14 @@ def load_model_data():
            df.reset_index().groupby([df['Province'].fillna('to_be_removed'), 'Country', 'CountryCode', 'Date']) \
                ['Recovered'].aggregate('first').unstack().reset_index(). \
                replace({'Province': {'to_be_removed': ''}})
+               
+               
+               
+               
+               
+def load_data_for_model_growth():
+    entries_list = _fetch_hopkins_from_db()
+    df = pd.DataFrame(entries_list)
+    countrywide_df = df.groupby(['Country','CountryCode', 'Date'])['Confirmed', 'Deaths', 'Recovered'].sum().reset_index()
+    return countrywide_df
+
