@@ -21,7 +21,6 @@ flags . DEFINE_boolean ('dryrun', False, '')
 
 def main(argv):
 
-
     # ------------------------ Today timestamp -----------------------#
     now = datetime.now()
     yesterday = now.replace(day=(now.day -1), hour=23, minute=59, second=59, microsecond=0) # midnight time as hopkins convention
@@ -41,7 +40,7 @@ def main(argv):
     headers = {}
     response = requests.request("GET", url, headers=headers, data=payload)
     countries = response.json()
-
+    
     #----------------- Fetching data using REST call -----------------#
     for country in countries:
         print(country)
